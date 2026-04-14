@@ -1,4 +1,4 @@
-name: grademinds-ai-2.0
+name: grademinds-ai
 channels:
   - conda-forge
 dependencies:
