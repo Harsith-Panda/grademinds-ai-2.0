@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import date
 from dotenv import load_dotenv
 
 from memory.student_registry import get_course, get_student_by_id
@@ -91,6 +92,9 @@ if st.session_state["student"]:
             )
             st.rerun()
         if st.button("📅 Today's Plan", use_container_width=True):
+            # Clear the cache so Node 4 re-evaluates after any Done/Struggled action
+            cache_key = f"todays_plan_{active_course.get('course_id')}_{str(date.today())}"
+            st.session_state.pop(cache_key, None)
             st.session_state["screen"] = "today_plan"
             _set_query_params(
                 student_id=student["student_id"],
@@ -194,5 +198,44 @@ elif screen == "roadmap_view":
 
 elif screen == "today_plan":
     from ui.screens.today_plan import render_today_plan
+    from agent.nodes.spaced_rep import spaced_rep_node
+    from memory.chroma_ops import get_topics_for_course
+    from memory.student_registry import get_course
 
-    render_today_plan()
+    student = st.session_state["student"]
+    course = st.session_state.get("active_course") or {}
+    course_id = course.get("course_id")
+    agent_state = st.session_state.get("agent_state") or {}
+
+    if not course_id:
+        st.warning("Please select a course first.")
+        if st.button("Go to courses"):
+            st.session_state["screen"] = "course_selector"
+            st.rerun()
+    else:
+        # ── State Rehydration (survive browser refresh) ─────────────────────
+        if not agent_state or not agent_state.get("roadmap"):
+            from memory.chroma_ops import load_roadmap
+            roadmap_data = load_roadmap(course_id)
+            if roadmap_data:
+                agent_state = {
+                    "student_id": student["student_id"],
+                    "course_id": course_id,
+                    "roadmap": roadmap_data,
+                    "todays_plan": None
+                }
+                st.session_state["agent_state"] = agent_state
+
+        # Run Node 4 — pure logic, fast, no LLM
+        cache_key = f"todays_plan_{course_id}_{str(date.today())}"
+        if cache_key not in st.session_state:
+            with st.spinner("Preparing your daily briefing..."):
+                updated_state = spaced_rep_node(agent_state)
+                st.session_state[cache_key] = updated_state["todays_plan"]
+                st.session_state["agent_state"] = updated_state
+
+        todays_plan = st.session_state[cache_key]
+        topic_data = get_topics_for_course(course_id)
+        course_info = get_course(course_id)
+
+        render_today_plan(todays_plan, topic_data, course_info, course_id)

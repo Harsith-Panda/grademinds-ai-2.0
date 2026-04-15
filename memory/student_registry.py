@@ -49,7 +49,6 @@ def register_student(name: str, password: str) -> dict:
                 "password_hash": _hash_password(password),
                 "created_at": datetime.now().isoformat(),
                 "last_active": datetime.now().isoformat(),
-                "total_sessions": 0,
             }
         ],
     )
@@ -78,21 +77,18 @@ def login_student(name: str, password: str) -> dict | None:
     return {"student_id": student_id, "name": meta["name"]}
 
 
-def increment_session(student_id: str):
+def record_session_activity(student_id: str):
+    """Simple activity tracker for persistence."""
     results = registry.get(ids=[student_id])
     if results["ids"]:
         meta = results["metadatas"][0]
         registry.update(
             ids=[student_id],
-            metadatas=[
-                {
-                    **meta,
-                    "total_sessions": meta.get("total_sessions", 0) + 1,
-                    "last_active": datetime.now().isoformat(),
-                }
-            ],
+            metadatas=[{
+                **meta,
+                "last_active": datetime.now().isoformat()
+            }]
         )
-
 
 # Course Management
 def create_course(
