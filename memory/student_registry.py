@@ -155,6 +155,7 @@ def get_course(course_id: str) -> dict | None:
     meta = results["metadatas"][0]
     return {
         "course_id": course_id,
+        "student_id": meta.get("student_id"),
         "topic": results["documents"][0],
         "mode": meta.get("mode", "explorer"),
         "roadmap_ready": meta.get("roadmap_ready", False),
@@ -162,6 +163,15 @@ def get_course(course_id: str) -> dict | None:
         "total_topics": meta.get("total_topics", 0),
         "done_topics": meta.get("done_topics", 0),
     }
+
+
+def get_student_by_id(student_id: str) -> dict | None:
+    """Fetch a student record by student_id."""
+    results = registry.get(ids=[student_id])
+    if not results["ids"]:
+        return None
+    meta = results["metadatas"][0]
+    return {"student_id": student_id, "name": meta.get("name")}
 
 
 def mark_roadmap_ready(student_id: str, course_id: str, total_topics: int):

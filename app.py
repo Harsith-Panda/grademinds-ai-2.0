@@ -1,6 +1,8 @@
 import streamlit as st
 from dotenv import load_dotenv
 
+from memory.student_registry import get_course, get_student_by_id
+
 load_dotenv()
 
 # ── Page config ────────────────────────────────────────────────────────────────
@@ -11,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── Screen routing ─────────────────────────────────────────────────────────────
+# ── Session state defaults ─────────────────────────────────────────────────────
 if "screen" not in st.session_state:
     st.session_state["screen"] = "welcome"
 
@@ -20,6 +22,52 @@ if "student" not in st.session_state:
 
 if "active_course" not in st.session_state:
     st.session_state["active_course"] = None
+
+
+def _set_query_params(student_id=None, screen=None, course_id=None):
+    params = {}
+    if student_id:
+        params["student_id"] = [student_id]
+    if screen:
+        params["screen"] = [screen]
+    if course_id:
+        params["course_id"] = [course_id]
+
+    set_qp = getattr(st, "experimental_set_query_params", None)
+    if set_qp is None:
+        set_qp = getattr(st, "set_query_params", None)
+    if set_qp:
+        set_qp(**params)
+
+
+def _restore_from_query_params():
+    get_qp = getattr(st, "experimental_get_query_params", None)
+    if get_qp is None:
+        get_qp = getattr(st, "get_query_params", None)
+    if not get_qp:
+        return
+
+    params = get_qp()
+    student_id = params.get("student_id", [None])[0]
+    screen_param = params.get("screen", [None])[0]
+    course_id = params.get("course_id", [None])[0]
+
+    if st.session_state["student"] is None and student_id:
+        student = get_student_by_id(student_id)
+        if student:
+            st.session_state["student"] = student
+            if screen_param:
+                st.session_state["screen"] = screen_param
+            if course_id:
+                course = get_course(course_id)
+                if course and course.get("student_id") == student_id:
+                    st.session_state["active_course"] = {
+                        "course_id": course_id,
+                        "topic": course["topic"],
+                    }
+
+
+_restore_from_query_params()
 
 screen = st.session_state["screen"]
 
@@ -33,11 +81,28 @@ if st.session_state["student"]:
         st.markdown(f"### 👤 {student['name']}")
         st.caption(f"Topic: {current_topic}")
         st.divider()
+        if st.button("🏠 Courses", use_container_width=True):
+            st.session_state["screen"] = "course_selector"
+            _set_query_params(
+                student_id=student["student_id"],
+                screen="course_selector",
+            )
+            st.rerun()
         if st.button("📅 Today's Plan", use_container_width=True):
             st.session_state["screen"] = "today_plan"
+            _set_query_params(
+                student_id=student["student_id"],
+                screen="today_plan",
+                course_id=active_course.get("course_id"),
+            )
             st.rerun()
         if st.button("🗺️ My Roadmap", use_container_width=True):
             st.session_state["screen"] = "roadmap_view"
+            _set_query_params(
+                student_id=student["student_id"],
+                screen="roadmap_view",
+                course_id=active_course.get("course_id"),
+            )
             st.rerun()
         st.divider()
         if st.button("🚪 Log out", use_container_width=True):
@@ -45,6 +110,7 @@ if st.session_state["student"]:
             st.session_state["active_course"] = None
             st.session_state["agent_state"] = None
             st.session_state["screen"] = "welcome"
+            _set_query_params()
             st.rerun()
 
 # ── Screen dispatch ────────────────────────────────────────────────────────────
@@ -82,6 +148,11 @@ elif screen == "onboarding":
             "topic": final_state["topic"],
         }
         st.session_state["screen"] = "roadmap_view"
+        _set_query_params(
+            student_id=final_state["student_id"],
+            screen="roadmap_view",
+            course_id=final_state["course_id"],
+        )
         st.rerun()
 
     render_explorer_onboarding(on_submit)
@@ -105,6 +176,11 @@ elif screen == "roadmap_view":
             st.session_state["screen"] = "course_selector"
             st.rerun()
     else:
+        _set_query_params(
+            student_id=st.session_state["student"]["student_id"],
+            screen="roadmap_view",
+            course_id=course_id,
+        )
         roadmap = load_roadmap(course_id)
         topic_data = get_topics_for_course(course_id)
         render_roadmap_view(roadmap, topic_data, course_id)

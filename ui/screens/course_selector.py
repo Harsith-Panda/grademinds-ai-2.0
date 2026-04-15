@@ -83,6 +83,15 @@ def render_course_selector():
                             "chroma_initialized": True,
                         }
                         st.session_state["screen"] = "roadmap_view"
+                        set_qp = getattr(st, "experimental_set_query_params", None)
+                        if set_qp is None:
+                            set_qp = getattr(st, "set_query_params", None)
+                        if set_qp:
+                            set_qp(
+                                student_id=student["student_id"],
+                                screen="roadmap_view",
+                                course_id=course["course_id"],
+                            )
                         st.rerun()
 
                 with col3:

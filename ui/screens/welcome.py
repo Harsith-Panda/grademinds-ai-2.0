@@ -23,6 +23,14 @@ def render_welcome():
                     student = register_student(name=name, pin=pin)
                     st.session_state["student"] = student
                     st.session_state["screen"] = "course_selector"
+                    set_qp = getattr(st, "experimental_set_query_params", None)
+                    if set_qp is None:
+                        set_qp = getattr(st, "set_query_params", None)
+                    if set_qp:
+                        set_qp(
+                            student_id=student["student_id"],
+                            screen="course_selector",
+                        )
                     st.rerun()
                 except ValueError as e:
                     st.error(str(e))
@@ -38,4 +46,12 @@ def render_welcome():
             else:
                 st.session_state["student"] = student
                 st.session_state["screen"] = "course_selector"
+                set_qp = getattr(st, "experimental_set_query_params", None)
+                if set_qp is None:
+                    set_qp = getattr(st, "set_query_params", None)
+                if set_qp:
+                    set_qp(
+                        student_id=student["student_id"],
+                        screen="course_selector",
+                    )
                 st.rerun()
