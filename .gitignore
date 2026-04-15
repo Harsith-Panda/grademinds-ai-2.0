@@ -5,3 +5,4 @@ __pycache__/
 grademinds_db/
 .DS_Store
 *.pkl
+.vscode/

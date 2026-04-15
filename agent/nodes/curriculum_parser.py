@@ -157,6 +157,12 @@ def _parse_and_validate(raw: str) -> list[dict]:
 
 # Main Curriculum Parser Node
 def curriculum_parser_node(state: dict) -> dict:
+    if state.get("topic_graph"):
+        print(
+            f"[curriculum_parser] Course {state.get('course_id')} already has topic_graph — skipping."
+        )
+        return state
+
     topic = state.get("topic", "")
     sa = state.get("self_assessment", {})
     known = sa.get("known", "nothing yet")

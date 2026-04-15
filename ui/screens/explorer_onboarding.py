@@ -1,6 +1,7 @@
 import streamlit as st
 
 from agent.nodes.curriculum_parser import extract_syllabus_text
+from memory.student_registry import create_course
 
 
 def render_explorer_onboarding(on_submit):
@@ -74,23 +75,32 @@ def render_explorer_onboarding(on_submit):
             st.error("Please enter a topic or upload a syllabus.")
             return
 
-        # Use PDF filename as topic if no topic typed
         display_topic = topic.strip() or (
             uploaded_pdf.name if uploaded_pdf else "My Course"
         )
+        student = st.session_state["student"]
 
-        import uuid
+        sa = {
+            "known": known.strip(),
+            "hours_per_week": hours,
+            "goal": goal,
+        }
+
+        # Create course record — gets a fresh course_id
+        course = create_course(
+            student_id=student["student_id"],
+            topic=display_topic,
+            mode="explorer",
+            self_assessment=sa,
+        )
+
         from datetime import date
 
         initial_state = {
             "mode": "explorer",
             "topic": display_topic,
             "syllabus_text": syllabus_text,
-            "self_assessment": {
-                "known": known.strip(),
-                "hours_per_week": hours,
-                "goal": goal,
-            },
+            "self_assessment": sa,
             "academic_features": {},
             "predicted_score": None,
             "pass_fail": None,
@@ -99,7 +109,8 @@ def render_explorer_onboarding(on_submit):
             "roadmap": None,
             "todays_plan": None,
             "resources": None,
-            "student_id": str(uuid.uuid4()),
+            "student_id": student["student_id"],
+            "course_id": course["course_id"],  # ← course-scoped
             "session_date": str(date.today()),
             "chroma_initialized": False,
         }
