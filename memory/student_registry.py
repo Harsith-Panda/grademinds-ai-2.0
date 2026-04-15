@@ -10,20 +10,34 @@ registry = client.get_or_create_collection("student_registry")
 courses = client.get_or_create_collection("student_courses")
 
 
-# Helper -> Hashing Pin
-def _hash_pin(pin: str) -> str:
-    return hashlib.sha256(pin.encode()).hexdigest()
+# Helper -> Hashing Password
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def validate_password_strength(password: str):
+    """
+    Standard password validation:
+    - Minimum 6 characters
+    - Must contain at least one number
+    """
+    if len(password) < 6:
+        raise ValueError("Password must be at least 6 characters long.")
+    if not any(char.isdigit() for char in password):
+        raise ValueError("Password must contain at least one number.")
 
 
 # Student identity - Registration
-def register_student(name: str, pin: str) -> dict:
+def register_student(name: str, password: str) -> dict:
     """
     Create a new student identity (no course yet).
-    Raises ValueError if name is already taken.
+    Raises ValueError if name is already taken or password is weak.
     """
+    validate_password_strength(password)
+    
     existing = registry.get(where={"name": name})
     if existing["ids"]:
-        raise ValueError(f"Name '{name}' is already taken. Choose a different name.")
+        raise ValueError(f"Username '{name}' is already taken. Choose a different one.")
 
     student_id = str(uuid.uuid4())
     registry.add(
@@ -32,7 +46,7 @@ def register_student(name: str, pin: str) -> dict:
         metadatas=[
             {
                 "name": name,
-                "pin_hash": _hash_pin(pin),
+                "password_hash": _hash_password(password),
                 "created_at": datetime.now().isoformat(),
                 "last_active": datetime.now().isoformat(),
                 "total_sessions": 0,
@@ -43,14 +57,16 @@ def register_student(name: str, pin: str) -> dict:
     return {"student_id": student_id, "name": name}
 
 
-def login_student(name: str, pin: str) -> dict | None:
-    """Verify name + PIN. Returns student record or None."""
+def login_student(name: str, password: str) -> dict | None:
+    """Verify username + password. Returns student record or None."""
     results = registry.get(where={"name": name})
     if not results["ids"]:
         return None
 
     meta = results["metadatas"][0]
-    if meta["pin_hash"] != _hash_pin(pin):
+    # Handle legacy 'pin_hash' for existing users
+    stored_hash = meta.get("password_hash") or meta.get("pin_hash")
+    if stored_hash != _hash_password(password):
         return None
 
     student_id = results["ids"][0]

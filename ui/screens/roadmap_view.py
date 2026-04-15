@@ -65,20 +65,24 @@ def render_roadmap_view(roadmap: list[dict], topic_data: list[dict], course_id: 
 
                 with col2:
                     if status != "done":
-                        if st.button("Done", key=f"done_{topic_name}"):
+                        if st.button("Done (Easy)", key=f"done_{topic_name}", use_container_width=True):
                             update_topic_after_session(
                                 course_id,
                                 topic_name,
                                 struggled=False,
                             )
                             st.rerun()
+                    else:
+                        st.write("✅")
 
                 with col3:
                     if status != "done":
-                        if st.button("Hard", key=f"hard_{topic_name}"):
+                        if st.button("Done (Hard)", key=f"hard_{topic_name}", use_container_width=True):
                             update_topic_after_session(
                                 course_id,
                                 topic_name,
                                 struggled=True,
                             )
                             st.rerun()
+
+    st.info("💡 **Tip:** 'Done (Easy)' schedules a review in 2-3 days. 'Done (Hard)' schedules it for tomorrow.")

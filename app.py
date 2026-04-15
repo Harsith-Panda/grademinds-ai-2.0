@@ -25,32 +25,34 @@ if "active_course" not in st.session_state:
 
 
 def _set_query_params(student_id=None, screen=None, course_id=None):
-    params = {}
     if student_id:
-        params["student_id"] = [student_id]
+        st.query_params["student_id"] = student_id
     if screen:
-        params["screen"] = [screen]
+        st.query_params["screen"] = screen
     if course_id:
-        params["course_id"] = [course_id]
+        st.query_params["course_id"] = course_id
 
-    set_qp = getattr(st, "experimental_set_query_params", None)
-    if set_qp is None:
-        set_qp = getattr(st, "set_query_params", None)
-    if set_qp:
-        set_qp(**params)
+    # Persistence Bridge: Sync to LocalStorage using JS
+    if student_id:
+        st.components.v1.html(
+            f"""
+            <script>
+                localStorage.setItem('grademinds_student_id', '{student_id}');
+            </script>
+            """,
+            height=0,
+        )
 
 
 def _restore_from_query_params():
-    get_qp = getattr(st, "experimental_get_query_params", None)
-    if get_qp is None:
-        get_qp = getattr(st, "get_query_params", None)
-    if not get_qp:
-        return
+    # 1. Try URL parameters first
+    student_id = st.query_params.get("student_id")
+    screen_param = st.query_params.get("screen")
+    course_id = st.query_params.get("course_id")
 
-    params = get_qp()
-    student_id = params.get("student_id", [None])[0]
-    screen_param = params.get("screen", [None])[0]
-    course_id = params.get("course_id", [None])[0]
+    # 2. If URL is empty, try to recover from LocalStorage (Advanced hack)
+    # Note: This requires a placeholder to execute JS which isn't easy in 1-shot.
+    # We'll stick to URL params as they are the most reliable in standard Streamlit.
 
     if st.session_state["student"] is None and student_id:
         student = get_student_by_id(student_id)
@@ -110,7 +112,12 @@ if st.session_state["student"]:
             st.session_state["active_course"] = None
             st.session_state["agent_state"] = None
             st.session_state["screen"] = "welcome"
-            _set_query_params()
+            st.query_params.clear()
+            # Clear LocalStorage too
+            st.components.v1.html(
+                "<script>localStorage.removeItem('grademinds_student_id');</script>",
+                height=0,
+            )
             st.rerun()
 
 # ── Screen dispatch ────────────────────────────────────────────────────────────
