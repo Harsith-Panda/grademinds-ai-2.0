@@ -137,9 +137,19 @@ def get_student_courses(student_id: str) -> list[dict]:
         return []
 
     course_list = []
+    # Access the topics collection for accurate counts
+    topics_col = client.get_or_create_collection("topics")
+
     for cid, doc, meta in zip(
         results["ids"], results["documents"], results["metadatas"]
     ):
+        # Fail-safe: Fetch the actual "done" count from topics collection
+        try:
+            done_results = topics_col.get(where={"$and": [{"course_id": cid}, {"status": "done"}]})
+            actual_done = len(done_results["ids"])
+        except Exception as e:
+            actual_done = meta.get("done_topics", 0)
+
         course_list.append(
             {
                 "course_id": cid,
@@ -149,7 +159,7 @@ def get_student_courses(student_id: str) -> list[dict]:
                 "created_at": meta.get("created_at", ""),
                 "last_accessed": meta.get("last_accessed", ""),
                 "total_topics": meta.get("total_topics", 0),
-                "done_topics": meta.get("done_topics", 0),
+                "done_topics": actual_done, # Use refreshed count
                 "self_assessment": json.loads(meta.get("self_assessment", "{}")),
             }
         )

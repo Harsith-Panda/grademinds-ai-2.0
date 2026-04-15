@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import date, datetime
 from memory.chroma_ops import update_topic_after_session, get_topics_for_course
-from memory.student_registry import update_course_progress, record_session_activity
+from memory.student_registry import record_session_activity
 
 BLOOM_MAP = {
     1: "Remember",

@@ -130,7 +130,37 @@ def update_topic_after_session(
             }
         ],
     )
-    print(f"[chroma_ops] '{topic_name}' updated — interval now {new_interval}d.")
+    print(f"[chroma_ops] '{topic_name}' updated — interval now {new_interval}d. Syncing registry...")
+    
+    # ──────────────────────────────────────────────────────────────────────────
+    # CRITICAL FIX: Update the summary metadata in student_courses collection
+    # ──────────────────────────────────────────────────────────────────────────
+    try:
+        # 1. Count ALL topics currently marked as "done" for this course
+        done_count_results = topics.get(
+            where={"$and": [{"course_id": course_id}, {"status": "done"}]}
+        )
+        done_count = len(done_count_results["ids"])
+
+        # 2. Update the student_courses collection record
+        course_registry = client.get_or_create_collection("student_courses")
+        course_meta_results = course_registry.get(ids=[course_id])
+        
+        if course_meta_results["ids"]:
+            current_meta = course_meta_results["metadatas"][0]
+            course_registry.update(
+                ids=[course_id],
+                metadatas=[{
+                    **current_meta,
+                    "done_topics": done_count,
+                    "last_accessed": datetime.now().isoformat()
+                }]
+            )
+            print(f"[chroma_ops] Registry progress updated: {done_count} topics done.")
+        else:
+            print(f"[chroma_ops] WARNING: Course {course_id} not found in registry during sync.")
+    except Exception as e:
+        print(f"[chroma_ops] ERROR updating registry summary: {e}")
 
 
 def delete_course_data(course_id: str):
