@@ -1,4 +1,5 @@
 import streamlit as st
+import urllib.parse
 from datetime import date
 from dotenv import load_dotenv
 
@@ -25,6 +26,11 @@ if "active_course" not in st.session_state:
     st.session_state["active_course"] = None
 
 
+def _render_html_in_iframe(html: str):
+    src = "data:text/html;charset=utf-8," + urllib.parse.quote(html)
+    st.iframe(src, height=1, width=1)
+
+
 def _set_query_params(student_id=None, screen=None, course_id=None):
     if student_id:
         st.query_params["student_id"] = student_id
@@ -35,13 +41,12 @@ def _set_query_params(student_id=None, screen=None, course_id=None):
 
     # Persistence Bridge: Sync to LocalStorage using JS
     if student_id:
-        st.components.v1.html(
+        _render_html_in_iframe(
             f"""
             <script>
                 localStorage.setItem('grademinds_student_id', '{student_id}');
             </script>
-            """,
-            height=0,
+            """
         )
 
 
@@ -118,9 +123,8 @@ if st.session_state["student"]:
             st.session_state["screen"] = "welcome"
             st.query_params.clear()
             # Clear LocalStorage too
-            st.components.v1.html(
-                "<script>localStorage.removeItem('grademinds_student_id');</script>",
-                height=0,
+            _render_html_in_iframe(
+                "<script>localStorage.removeItem('grademinds_student_id');</script>"
             )
             st.rerun()
 
