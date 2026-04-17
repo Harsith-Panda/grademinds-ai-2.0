@@ -4,5 +4,4 @@ __pycache__/
 *.pyc
 grademinds_db/
 .DS_Store
-*.pkl
 .vscode/
