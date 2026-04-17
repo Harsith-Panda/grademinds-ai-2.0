@@ -1,65 +1,97 @@
-# GradeMinds AI: The Intelligent Learning Ecosystem
+# GradeMinds AI: An Agentic Learning Ecosystem
 
-GradeMinds AI is a sophisticated education-tech platform that optimizes the transition from raw educational data into personalized, actionable learning journeys. By integrating advanced Large Language Models with persistent vector-memory systems, GradeMinds AI addresses the cognitive overhead associated with curriculum planning and knowledge retention.
+GradeMinds AI is a sophisticated, production-grade learning platform that leverages the intersection of **Agentic AI Orchestration**, **Predictive Machine Learning**, and **Persistent Vector Memory**. It transforms fragmented educational data into structured, personalized, and long-term learning journeys.
 
 ---
 
 ## Strategic Value Proposition
 
-GradeMinds AI is designed to solve critical inefficiencies in the modern learning experience:
+GradeMinds AI is engineered to eliminate the cognitive overhead of curriculum management and academic performance tracking through three core intelligence layers:
 
-### 1. Curriculum Orchestration
-Educational materials are often fragmented across syllabi, textbooks, and notes. GradeMinds AI serves as a central orchestrator, distilling complex curricula into atomic learning milestones, ensuring a logical progression from fundamental concepts to complex applications.
+### 1. Predictive Performance Modeling (The ML Layer)
+By analyzing student attributes (study habits, attendance, past scores) against historical datasets, GradeMinds AI predicts individual exam performance and identifies critical "Knowledge Gaps" before the student even begins their study journey.
 
-### 2. Personalized Performance Calibration
-Unlike traditional static courses, GradeMinds AI calibrates the learning path based on the student's unique profile—incorporating prior knowledge, available study bandwidth, and specific grade targets—to maximize return on effort.
+### 2. Semantic Curriculum Orchestration (The Agentic Layer)
+Utilizing a multi-node LangGraph framework, the system distills raw syllabi into atomic learning milestones, sequenced logically via topological dependencies and Bloom's Taxonomy.
 
-### 3. Systematic Knowledge Mastery
-The platform mitigates knowledge decay through an intelligent scheduling engine. By automating the review process based on personalized forgetting curves, it shifts the focus from short-term memorization to long-term cognitive mastery.
-
----
-
-## System Intelligence & Architecture
-
-The application operates on a multi-layered agentic framework designed for high-fidelity data processing and state persistence.
-
-![GradeMinds Architecture](architecture/User%20Booking%20Management-2026-04-15-151756.png)
-
-### Core Pipeline Intelligence
-
-The GradeMinds "Brain" utilizes a sequence of specialized processing intelligence to ensure every study session is optimized for the student's current state.
-
-#### Phase 1: Semantic Curriculum Extraction
-The engine processes raw syllabus data (PDF or text) through a deep-learning parser. This stage identifies the thematic core of the course, assigning Bloom’s Taxonomy levels to each topic to differentiate between rote memorization and high-level creation/evaluation tasks.
-
-#### Phase 2: Strategic Roadmap Synthesis
-Utilizing a topological sorting algorithm, this phase sequences topics into a coherent multi-week strategy. It ensures all prerequisites are satisfied and optimizes the learning load to match the student's specific time constraints and academic objectives.
-
-#### Phase 3: Adaptive Daily Briefing
-The scheduling engine identifies the optimal "Daily Milestone" and manages the "Review Queue." It employs an adaptive algorithm that learns from student performance—prioritizing areas of struggle—to maintain peak cognitive efficiency.
+### 3. Systematic Knowledge Mastery (The Memory Layer)
+The platform mitigates knowledge decay via an SM-2-inspired Spaced Repetition engine, ensuring that reviews are scheduled exactly when retention begins to fade, turning short-term learning into long-term cognitive mastery.
 
 ---
 
-## User Interface & Experience
+##  System Architecture & Workflow
 
-GradeMinds AI provides a premium, distraction-free environment designed for deep work and clear progress visualization.
+GradeMinds AI operates on a high-fidelity pipeline consisting of five specialized agentic nodes, integrated with a dedicated Predictive ML module.
 
-![GradeMinds Dashboard](grademinds_dashboard_demo_1776266267014.png)
+![GradeMinds System Architecture](diagrams/architecture/Architecture_diagram.png)
 
-### Key Features
-- **Intelligent Onboarding**: Dual-mode setup (Explorer vs. Academic) for tailored experiences.
-- **Dynamic Roadmaps**: Real-time visualization of the learning journey and prerequisite dependencies.
-- **Daily Study Briefing**: A focused daily view that acts as a personal coach, telling the student exactly what to focus on today.
-- **Progress Analytics**: High-level summaries of course completion and knowledge retention status.
+### 1. The Predictive ML Layer (`ml/`)
+The foundation of "Academic Mode," this layer utilizes dual-model inference to assess student readiness:
+- **Linear Regression Model**: Predicts a granular exam score (0–100).
+- **Decision Tree Classifier**: Determines Pass/Fail probability and generates a relative feature importance map.
+- **Gap Analysis**: Computes the "Score Impact" of each student attribute, allowing the system to prioritize interventions (e.g., "Increase study hours by 4 hrs/week to gain ~12 points").
+
+#### Model Performance & Feature Importance
+The system compares multiple modeling approaches to ensure high-fidelity predictions. The current production environment utilizes a Decision Tree Classifier for pass/fail probability due to its superior non-linear pattern recognition.
+
+<p align="center">
+  <img src="diagrams/model_stats/feature_importance.png" alt="Feature Importance" width="60%" />
+</p>
+
+<p align="center">
+  <img src="diagrams/model_stats/model_performance.png" alt="Model Comparison" width="85%" />
+</p>
+
+### 2. The Agentic Brain (`agent/nodes/`)
+The orchestrator sequences the learning experience across five distinct phases:
+
+1.  **Node 1: The Diagnostician**: Synthesizes ML outputs into plain-English "Academic Diagnoses," providing actionable recommendations and risk assessments.
+2.  **Node 2: Curriculum Parser**: Processes PDFs/text to extract topics, assigning Bloom's Taxonomy levels to differentiate between "Foundational" and "Expert" concepts.
+3.  **Node 3: Roadmap Planner**: Sequences extracted topics into a topological graph, ensuring prerequisite mastery before advanced concept introduction.
+4.  **Node 4: Spaced Repetition Scheduler**: A pure-logic engine that calculates the "Daily Briefing," identifying which topics move to the "Review Queue" and which "New Topic" should be introduced today.
+5.  **Node 5: Resource Retriever**: Curates high-quality external study materials (YouTube, Wikipedia, academic journals) using Tavily Web Search and ChromaDB-backed deduplication.
 
 ---
 
-## Technical Foundation
+##  Memory & Data Integrity (`memory/`)
 
-GradeMinds AI is built on a modern, robust technology stack ensuring high performance and data integrity:
+The platform ensures 100% data isolation and session persistence through a custom memory architecture:
+- **Student Registry**: Secure hashing for credentials and multi-user data isolation.
+- **Persistence Bridge**: Synchronizes local Streamlit state with browser `localStorage` and URL parameters to ensure sessions survive across browser refreshes.
+- **Persistent ChromaDB**: All roadmaps, topics, and curated resources are stored in specialized vector collections, allowing the AI to "remember" every student's unique progress across sessions.
 
-- **Engine**: LangGraph & Custom Agentic Nodes
-- **Models**: Llama-3.1-8b-instant (Groq) for high-speed semantic processing
-- **Memory**: ChromaDB Persistent Vector Storage
-- **Interface**: Streamlit Enterprise-grade UI logic
-- **Data Processing**: PyMuPDF High-fidelity PDF extraction
+---
+
+##  Technical Foundation
+
+- **Orchestration**: LangGraph (v0.2.x) with custom Pydantic-validated state management.
+- **Predictive ML**: Scikit-learn (Decision Trees, Linear Regression) via `joblib`.
+- **LLM**: Llama-3.1-8b-instant (via Groq) for high-speed semantic extraction.
+- **Vector Database**: ChromaDB (v0.5.x) for persistent knowledge retrieval.
+- **Inference**: Tavily API for trusted, filtered educational web search.
+- **Frontend**: Streamlit with custom CSS (Glassmorphism, soft mint/sky-blue palette).
+
+---
+
+##  Project Structure
+
+```text
+grademinds-ai-2.0/
+├── agent/                  # LangGraph Pipeline
+│   ├── nodes/              # Specialized Agentic Processors
+│   └── graph.py            # Orchestration Logic
+├── memory/                 # Data Persistence Layer
+│   ├── student_registry.py # User & Course DB
+│   └── chroma_ops.py       # Vector Memory Ops (Roadmaps, Topics)
+├── ml/                     # Predictive Analytics Layer
+│   ├── models/             # Pickle Files (Classifier, Regressor)
+│   └── predictor.py        # ML Inference & Gap Analysis
+├── ui/                     # Streamlit Interface Layer
+│   └── screens/            # Application Screen Components
+├── app.py                  # Main Entry Point & Session Dispatcher
+└── grademinds_db/          # Persistent ChromaDB Storage (Local)
+```
+
+---
+
+*GradeMinds AI — Transforming raw information into structured intelligence.*
