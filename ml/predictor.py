@@ -16,9 +16,9 @@ FEATURE_NAMES = [
 
 # Dataset averages From Training Dataset (AVG)
 FEATURE_AVERAGES = {
-    "Study_Hours_per_Week": 26.53,
-    "Attendance_Rate": 77.82,
-    "Past_Exam_Scores": 77.72,
+    "Study_Hours_per_Week": 26.132768,
+    "Attendance_Rate": 78.107722,
+    "Past_Exam_Scores": 77.871469,
     "Extracurricular_Activities_Yes": 0.49,
 }
 
@@ -46,7 +46,7 @@ def _load_models():
             )
         _reg_model = joblib.load(REG_PATH)
 
-        coefs = _reg_model.coef_
+        coefs = _reg_model.named_steps["model"].coef_
         FEATURE_COEFFICIENTS = dict(zip(FEATURE_NAMES, coefs))
 
         print(f"[predictor] Loaded regression model from {REG_PATH}")
@@ -60,7 +60,7 @@ def _load_models():
             )
         _clf_model = joblib.load(CLF_PATH)
 
-        importances = _clf_model.feature_importances_
+        importances = _clf_model.named_steps["model"].feature_importances_
         FEATURE_IMPORTANCES = dict(zip(FEATURE_NAMES, importances))
 
         print(f"[predictor] Loaded classifier model from {CLF_PATH}")

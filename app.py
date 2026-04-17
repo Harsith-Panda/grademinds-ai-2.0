@@ -1,6 +1,7 @@
-import streamlit as st
 import urllib.parse
 from datetime import date
+
+import streamlit as st
 from dotenv import load_dotenv
 
 from memory.student_registry import get_course, get_student_by_id
@@ -84,7 +85,9 @@ if st.session_state["student"]:
     with st.sidebar:
         student = st.session_state["student"]
         active_course = st.session_state.get("active_course") or {}
-        current_topic = active_course.get("topic") or student.get("topic") or "No active course"
+        current_topic = (
+            active_course.get("topic") or student.get("topic") or "No active course"
+        )
 
         st.markdown(f"### 👤 {student['name']}")
         st.caption(f"Topic: {current_topic}")
@@ -98,7 +101,9 @@ if st.session_state["student"]:
             st.rerun()
         if st.button("📅 Today's Plan", use_container_width=True):
             # Clear the cache so Node 4 re-evaluates after any Done/Struggled action
-            cache_key = f"todays_plan_{active_course.get('course_id')}_{str(date.today())}"
+            cache_key = (
+                f"todays_plan_{active_course.get('course_id')}_{str(date.today())}"
+            )
             st.session_state.pop(cache_key, None)
             st.session_state["screen"] = "today_plan"
             _set_query_params(
@@ -201,10 +206,10 @@ elif screen == "roadmap_view":
         render_roadmap_view(roadmap, topic_data, course_id)
 
 elif screen == "today_plan":
-    from ui.screens.today_plan import render_today_plan
     from agent.nodes.spaced_rep import spaced_rep_node
     from memory.chroma_ops import get_topics_for_course
     from memory.student_registry import get_course
+    from ui.screens.today_plan import render_today_plan
 
     student = st.session_state["student"]
     course = st.session_state.get("active_course") or {}
@@ -220,13 +225,14 @@ elif screen == "today_plan":
         # ── State Rehydration (survive browser refresh) ─────────────────────
         if not agent_state or not agent_state.get("roadmap"):
             from memory.chroma_ops import load_roadmap
+
             roadmap_data = load_roadmap(course_id)
             if roadmap_data:
                 agent_state = {
                     "student_id": student["student_id"],
                     "course_id": course_id,
                     "roadmap": roadmap_data,
-                    "todays_plan": None
+                    "todays_plan": None,
                 }
                 st.session_state["agent_state"] = agent_state
 
@@ -236,6 +242,7 @@ elif screen == "today_plan":
             with st.spinner("Preparing your daily briefing and fetching resources..."):
                 updated_state = spaced_rep_node(agent_state)
                 from agent.nodes.resource_retriever import resource_retriever_node
+
                 updated_state = resource_retriever_node(updated_state)
                 st.session_state[cache_key] = updated_state["todays_plan"]
                 st.session_state["agent_state"] = updated_state
@@ -246,3 +253,95 @@ elif screen == "today_plan":
         course_info = get_course(course_id)
 
         render_today_plan(todays_plan, topic_data, course_info, course_id, resources)
+
+elif screen == "academic_onboarding":
+    from ui.screens.academic_onboarding import render_academic_onboarding
+
+    def on_academic_submit(initial_state):
+        pass
+
+    render_academic_onboarding(on_academic_submit)
+
+elif screen == "diagnosis_view":
+    from agent.graph import app as agent_graph
+    from memory.chroma_ops import init_topics_for_course
+    from memory.student_registry import create_course
+    from ui.screens.diagnosis_view import render_diagnosis_view
+
+    def on_confirm(diagnosis):
+        student = st.session_state["student"]
+        topic = st.session_state["pending_topic"]
+        syllabus_text = st.session_state["pending_syllabus"]
+        goal = st.session_state["pending_goal"]
+        hours = st.session_state["pending_hours"]
+        features = st.session_state["pending_features"]
+        ml_output = st.session_state["pending_ml_output"]
+
+        sa = {
+            "known": "Currently enrolled in this course",
+            "hours_per_week": hours,
+            "goal": goal,
+        }
+
+        course = create_course(
+            student_id=student["student_id"],
+            topic=topic,
+            mode="academic",
+            self_assessment=sa,
+        )
+
+        initial_state = {
+            "mode": "academic",
+            "topic": topic,
+            "syllabus_text": syllabus_text,
+            "self_assessment": sa,
+            "academic_features": features,
+            "ml_output": ml_output,
+            "predicted_score": ml_output["predicted_score"],
+            "pass_fail": ml_output["pass_fail"],
+            "diagnosis": diagnosis,  # already computed in diagnosis_view
+            "topic_graph": None,
+            "roadmap": None,
+            "todays_plan": None,
+            "resources": None,
+            "student_id": student["student_id"],
+            "course_id": course["course_id"],
+            "session_date": str(date.today()),
+            "chroma_initialized": False,
+        }
+
+        with st.spinner("Building your academic roadmap..."):
+            # Diagnostician is SKIPPED because diagnosis already ran in
+            # diagnosis_view — it's already in state. Graph routes to
+            # curriculum_parser directly via the mode="academic" path
+            # BUT diagnosis is pre-populated so Node 1 is a fast pass-through.
+            final_state = agent_graph.invoke(initial_state)
+
+        init_topics_for_course(
+            student_id=student["student_id"],
+            course_id=course["course_id"],
+            topic_graph=final_state.get("topic_graph", []),
+            roadmap=final_state.get("roadmap", []),
+        )
+
+        # Clean up pending session vars
+        for key in [
+            "pending_ml_output",
+            "pending_topic",
+            "pending_syllabus",
+            "pending_goal",
+            "pending_hours",
+            "pending_features",
+            "diagnosis_result",
+        ]:
+            st.session_state.pop(key, None)
+
+        st.session_state["agent_state"] = final_state
+        st.session_state["active_course"] = {
+            "course_id": course["course_id"],
+            "topic": topic,
+        }
+        st.session_state["screen"] = "roadmap_view"
+        st.rerun()
+
+    render_diagnosis_view(on_confirm)
