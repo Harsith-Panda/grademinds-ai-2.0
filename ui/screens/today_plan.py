@@ -83,8 +83,7 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id, resources
             topic_res = next((res['links'] for res in resources_list if res['topic'] == new_topic_name), [])
             if topic_res:
                 for lnk in topic_res:
-                    source_str = "Tavily" if lnk['source'] == "tavily" else "Cache" if lnk['source'] == "chroma_cache" else "AI"
-                    st.markdown(f"- [{lnk['title']}]({lnk['url']}) `({source_str})`")
+                    st.markdown(f"- [{lnk['title']}]({lnk['url']})")
             else:
                 st.info("No external resources found for this topic.")
             
