@@ -18,3 +18,4 @@ class GradeMindsState(TypedDict):
     course_id: str  # ← NEW: namespaces all Chroma data
     session_date: str
     chroma_initialized: bool
+    ml_output: Optional[dict]
