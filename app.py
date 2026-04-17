@@ -233,13 +233,16 @@ elif screen == "today_plan":
         # Run Node 4 — pure logic, fast, no LLM
         cache_key = f"todays_plan_{course_id}_{str(date.today())}"
         if cache_key not in st.session_state:
-            with st.spinner("Preparing your daily briefing..."):
+            with st.spinner("Preparing your daily briefing and fetching resources..."):
                 updated_state = spaced_rep_node(agent_state)
+                from agent.nodes.resource_retriever import resource_retriever_node
+                updated_state = resource_retriever_node(updated_state)
                 st.session_state[cache_key] = updated_state["todays_plan"]
                 st.session_state["agent_state"] = updated_state
 
         todays_plan = st.session_state[cache_key]
+        resources = st.session_state.get("agent_state", {}).get("resources", [])
         topic_data = get_topics_for_course(course_id)
         course_info = get_course(course_id)
 
-        render_today_plan(todays_plan, topic_data, course_info, course_id)
+        render_today_plan(todays_plan, topic_data, course_info, course_id, resources)

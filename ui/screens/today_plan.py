@@ -12,7 +12,7 @@ BLOOM_MAP = {
     6: "Create"
 }
 
-def render_today_plan(todays_plan, topic_data, course_info, course_id):
+def render_today_plan(todays_plan, topic_data, course_info, course_id, resources=None):
     """
     Renders the beautiful Daily Study Briefing screen.
     """
@@ -77,9 +77,16 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id):
 
             st.divider()
             
-            # Resource Placeholder (Node 5)
+            # Resource Integration (Node 5)
             st.markdown("#### 📚 Recommended Resources")
-            st.info("🔍 *Knowledge retrieval in progress... (Node 5 integration coming soon)*")
+            resources_list = resources or []
+            topic_res = next((res['links'] for res in resources_list if res['topic'] == new_topic_name), [])
+            if topic_res:
+                for lnk in topic_res:
+                    source_str = "Tavily" if lnk['source'] == "tavily" else "Cache" if lnk['source'] == "chroma_cache" else "AI"
+                    st.markdown(f"- [{lnk['title']}]({lnk['url']}) `({source_str})`")
+            else:
+                st.info("No external resources found for this topic.")
             
             # Action Buttons
             bt1, bt2 = st.columns(2)
@@ -110,6 +117,15 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id):
                 
                 st.write(f"Last seen: **{days} days ago**")
                 st.write(f"Times reviewed before: **{meta.get('times_reviewed', 0)}**")
+                
+                # Resource Integration
+                resources_list = resources or []
+                topic_res = next((res['links'] for res in resources_list if res['topic'] == r_name), [])
+                if topic_res:
+                    st.markdown("#### 📚 Recommended Resources")
+                    for lnk in topic_res:
+                        source_str = "Tavily" if lnk['source'] == "tavily" else "Cache" if lnk['source'] == "chroma_cache" else "AI"
+                        st.markdown(f"- [{lnk['title']}]({lnk['url']}) `({source_str})`")
                 
                 b1, b2 = st.columns(2)
                 if b1.button("Got it ✓", key=f"rev_done_{i}"):
