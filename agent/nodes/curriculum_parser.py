@@ -5,7 +5,7 @@ import time
 import fitz
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 load_dotenv()
 
@@ -28,20 +28,23 @@ class TopicNode(BaseModel):
     prerequisites: list[str]
     type: str
 
-    @validator("bloom_level")
+    @field_validator("bloom_level")
+    @classmethod
     def bloom_in_range(cls, v):
         if not 1 <= v <= 6:
             raise ValueError(f"bloom_level must be 1–6, got {v}")
         return v
 
-    @validator("type")
+    @field_validator("type")
+    @classmethod
     def valid_type(cls, v):
         v = v.lower().replace("-", "_").replace(" ", "_")
         if v not in ("must_know", "enrichment"):
             return "must_know"  # safe default
         return v
 
-    @validator("estimated_hours")
+    @field_validator("estimated_hours")
+    @classmethod
     def positive_hours(cls, v):
         return max(0.5, float(v))
 

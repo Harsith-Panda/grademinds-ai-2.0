@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, date
 from typing import Optional, List
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from memory.chroma_ops import get_topics_for_course
 
@@ -25,7 +25,8 @@ class TodaysPlanSchema(BaseModel):
     session_date: str
     all_done_today: bool
 
-    @validator("current_week")
+    @field_validator("current_week")
+    @classmethod
     def week_positive(cls, v):
         if v < 1:
             raise ValueError("current_week must be >= 1")

@@ -8,7 +8,6 @@ from memory.student_registry import get_course, get_student_by_id
 
 load_dotenv()
 
-# ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="GradeMinds AI",
     page_icon="🧠",
@@ -16,7 +15,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── Session state defaults ─────────────────────────────────────────────────────
 if "screen" not in st.session_state:
     st.session_state["screen"] = "welcome"
 
@@ -27,9 +25,72 @@ if "active_course" not in st.session_state:
     st.session_state["active_course"] = None
 
 
+
 def _render_html_in_iframe(html: str):
     src = "data:text/html;charset=utf-8," + urllib.parse.quote(html)
     st.iframe(src, height=1, width=1)
+
+
+def _apply_theme():
+    """
+    Applies dark mode theme (always dark mode now).
+    """
+    # Always use dark mode
+    css = """
+    <style>
+    .stApp {
+        background-color: #0f1419;
+        color: #e1e8ed;
+    }
+    .stSidebar {
+        background-color: #1a1a2e;
+        color: #e1e8ed;
+    }
+    .stButton button {
+        background-color: #16213e;
+        color: #e1e8ed;
+        border: 1px solid #0f3460;
+    }
+    .stButton button:hover {
+        background-color: #0f3460;
+        color: #ffffff;
+    }
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+        background-color: #16213e;
+        color: #e1e8ed;
+        border: 1px solid #0f3460;
+    }
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: #0f3460;
+        box-shadow: 0 0 0 0.2rem rgba(15, 52, 96, 0.25);
+    }
+    /* Make cursor visible in input fields */
+    .stTextInput input {
+        caret-color: #e1e8ed;
+    }
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        color: #e1e8ed;
+    }
+    .stMarkdown p {
+        color: #c4c4c4;
+    }
+    .stAlert {
+        background-color: #16213e;
+        color: #e1e8ed;
+        border: 1px solid #0f3460;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #1a1a2e;
+    }
+    .stTabs [data-baseweb="tab"] {
+        color: #e1e8ed;
+    }
+    .stProgress > div > div {
+        background-color: #0f3460;
+    }
+    </style>
+    """
+    st.html(css)
 
 
 def _set_query_params(student_id=None, screen=None, course_id=None):
@@ -57,10 +118,6 @@ def _restore_from_query_params():
     screen_param = st.query_params.get("screen")
     course_id = st.query_params.get("course_id")
 
-    # 2. If URL is empty, try to recover from LocalStorage (Advanced hack)
-    # Note: This requires a placeholder to execute JS which isn't easy in 1-shot.
-    # We'll stick to URL params as they are the most reliable in standard Streamlit.
-
     if st.session_state["student"] is None and student_id:
         student = get_student_by_id(student_id)
         if student:
@@ -78,6 +135,9 @@ def _restore_from_query_params():
 
 _restore_from_query_params()
 
+# Apply theme
+_apply_theme()
+
 screen = st.session_state["screen"]
 
 # ── Sidebar (shown only when logged in) ───────────────────────────────────────
@@ -92,15 +152,15 @@ if st.session_state["student"]:
         st.markdown(f"### 👤 {student['name']}")
         st.caption(f"Topic: {current_topic}")
         st.divider()
-        if st.button("🏠 Courses", use_container_width=True):
+
+        if st.button("Courses", use_container_width=True):
             st.session_state["screen"] = "course_selector"
             _set_query_params(
                 student_id=student["student_id"],
                 screen="course_selector",
             )
             st.rerun()
-        if st.button("📅 Today's Plan", use_container_width=True):
-            # Clear the cache so Node 4 re-evaluates after any Done/Struggled action
+        if st.button("Today's Plan", use_container_width=True):
             cache_key = (
                 f"todays_plan_{active_course.get('course_id')}_{str(date.today())}"
             )
@@ -112,7 +172,7 @@ if st.session_state["student"]:
                 course_id=active_course.get("course_id"),
             )
             st.rerun()
-        if st.button("🗺️ My Roadmap", use_container_width=True):
+        if st.button("My Roadmap", use_container_width=True):
             st.session_state["screen"] = "roadmap_view"
             _set_query_params(
                 student_id=student["student_id"],
@@ -121,19 +181,17 @@ if st.session_state["student"]:
             )
             st.rerun()
         st.divider()
-        if st.button("🚪 Log out", use_container_width=True):
+        if st.button("Log out", use_container_width=True):
             st.session_state["student"] = None
             st.session_state["active_course"] = None
             st.session_state["agent_state"] = None
             st.session_state["screen"] = "welcome"
             st.query_params.clear()
-            # Clear LocalStorage too
             _render_html_in_iframe(
                 "<script>localStorage.removeItem('grademinds_student_id');</script>"
             )
             st.rerun()
 
-# ── Screen dispatch ────────────────────────────────────────────────────────────
 if screen == "welcome":
     from ui.screens.welcome import render_welcome
 
@@ -150,8 +208,9 @@ elif screen == "onboarding":
     from ui.screens.explorer_onboarding import render_explorer_onboarding
 
     def on_submit(initial_state):
+        from agent.state import GradeMindsState
         with st.spinner("Building your personalized roadmap..."):
-            final_state = agent_graph.invoke(initial_state)
+            final_state = agent_graph.invoke(GradeMindsState(**initial_state))
 
         # Initialize spaced-rep topic records in Chroma
         init_topics_for_course(
@@ -201,7 +260,7 @@ elif screen == "roadmap_view":
             screen="roadmap_view",
             course_id=course_id,
         )
-        roadmap = load_roadmap(course_id)
+        roadmap = load_roadmap(course_id) or []
         topic_data = get_topics_for_course(course_id)
         render_roadmap_view(roadmap, topic_data, course_id)
 
@@ -222,7 +281,6 @@ elif screen == "today_plan":
             st.session_state["screen"] = "course_selector"
             st.rerun()
     else:
-        # ── State Rehydration (survive browser refresh) ─────────────────────
         if not agent_state or not agent_state.get("roadmap"):
             from memory.chroma_ops import load_roadmap
 
@@ -236,7 +294,6 @@ elif screen == "today_plan":
                 }
                 st.session_state["agent_state"] = agent_state
 
-        # Run Node 4 — pure logic, fast, no LLM
         cache_key = f"todays_plan_{course_id}_{str(date.today())}"
         if cache_key not in st.session_state:
             with st.spinner("Preparing your daily briefing and fetching resources..."):
@@ -269,6 +326,7 @@ elif screen == "diagnosis_view":
     from ui.screens.diagnosis_view import render_diagnosis_view
 
     def on_confirm(diagnosis):
+        from agent.state import GradeMindsState
         student = st.session_state["student"]
         topic = st.session_state["pending_topic"]
         syllabus_text = st.session_state["pending_syllabus"]
@@ -299,7 +357,7 @@ elif screen == "diagnosis_view":
             "ml_output": ml_output,
             "predicted_score": ml_output["predicted_score"],
             "pass_fail": ml_output["pass_fail"],
-            "diagnosis": diagnosis,  # already computed in diagnosis_view
+            "diagnosis": diagnosis, 
             "topic_graph": None,
             "roadmap": None,
             "todays_plan": None,
@@ -311,11 +369,7 @@ elif screen == "diagnosis_view":
         }
 
         with st.spinner("Building your academic roadmap..."):
-            # Diagnostician is SKIPPED because diagnosis already ran in
-            # diagnosis_view — it's already in state. Graph routes to
-            # curriculum_parser directly via the mode="academic" path
-            # BUT diagnosis is pre-populated so Node 1 is a fast pass-through.
-            final_state = agent_graph.invoke(initial_state)
+            final_state = agent_graph.invoke(GradeMindsState(**initial_state))
 
         init_topics_for_course(
             student_id=student["student_id"],
@@ -324,7 +378,6 @@ elif screen == "diagnosis_view":
             roadmap=final_state.get("roadmap", []),
         )
 
-        # Clean up pending session vars
         for key in [
             "pending_ml_output",
             "pending_topic",

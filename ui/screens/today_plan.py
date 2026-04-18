@@ -40,7 +40,7 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id, resources
     # ── SECTION D: ALL DONE STATE (Exclusive check) ─────────────────────────
     if todays_plan.get("all_done_today"):
         st.balloons()
-        st.success("### You're all caught up for today! 🎉")
+        st.success("### You're all caught up for today!")
         st.write("Excellent work. Your brain is absorbing the material perfectly.")
         
         # Next session preview
@@ -51,13 +51,13 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id, resources
     # ── SECTION B: NEW TOPIC CARD ───────────────────────────────────────────
     new_topic_name = todays_plan.get("new_topic")
     if new_topic_name:
-        st.markdown("### 🎯 New Milestone")
+        st.markdown("### New Milestone")
         
         # Get metadata for this topic
         meta = next((t for t in topic_data if t['name'] == new_topic_name), {})
         
         # Card container
-        with st.container(border=True):
+        with st.container():
             col1, col2 = st.columns([3, 1])
             with col1:
                 st.markdown(f"## {new_topic_name}")
@@ -70,15 +70,15 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id, resources
             
             # Badges
             c_tag, c_time, c_type = st.columns(3)
-            c_tag.caption(f"📍 Week {meta.get('week', 1)}")
-            c_time.caption(f"⏱️ {meta.get('estimated_hours', 1.0)} hours")
+            c_tag.caption(f"Week {meta.get('week', 1)}")
+            c_time.caption(f"{meta.get('estimated_hours', 1.0)} hours")
             t_type = meta.get("topic_type", "must_know").replace("_", " ").title()
-            c_type.caption(f"💎 {t_type}")
+            c_type.caption(f"{t_type}")
 
             st.divider()
             
             # Resource Integration (Node 5)
-            st.markdown("#### 📚 Recommended Resources")
+            st.markdown("#### Recommended Resources")
             resources_list = resources or []
             topic_res = next((res['links'] for res in resources_list if res['topic'] == new_topic_name), [])
             if topic_res:
@@ -89,17 +89,17 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id, resources
             
             # Action Buttons
             bt1, bt2 = st.columns(2)
-            if bt1.button("Mark as Done ✅", type="primary", key="btn_new_done"):
+            if bt1.button("Mark as Done", type="primary", key="btn_new_done"):
                 _handle_completion(course_id, new_topic_name, False)
             
-            if bt2.button("Mark as Struggled ⚠️", key="btn_new_hard"):
+            if bt2.button("Mark as Struggled", key="btn_new_hard"):
                 _handle_completion(course_id, new_topic_name, True)
 
     # ── SECTION C: REVIEW CARDS ─────────────────────────────────────────────
     reviews = todays_plan.get("review_topics", [])
     if reviews:
         st.divider()
-        st.markdown("### 🔄 Daily Review Queue")
+        st.markdown("### Daily Review Queue")
         st.caption("Spaced repetition keeps these topics fresh in your long-term memory.")
         
         for i, r_name in enumerate(reviews):
@@ -121,20 +121,20 @@ def render_today_plan(todays_plan, topic_data, course_info, course_id, resources
                 resources_list = resources or []
                 topic_res = next((res['links'] for res in resources_list if res['topic'] == r_name), [])
                 if topic_res:
-                    st.markdown("#### 📚 Recommended Resources")
+                    st.markdown("#### Recommended Resources")
                     for lnk in topic_res:
                         source_str = "Tavily" if lnk['source'] == "tavily" else "Cache" if lnk['source'] == "chroma_cache" else "AI"
                         st.markdown(f"- [{lnk['title']}]({lnk['url']}) `({source_str})`")
                 
                 b1, b2 = st.columns(2)
-                if b1.button("Got it ✓", key=f"rev_done_{i}"):
+                if b1.button("Got it", key=f"rev_done_{i}"):
                     _handle_completion(course_id, r_name, False)
                 if b2.button("Still struggling", key=f"rev_hard_{i}"):
                     _handle_completion(course_id, r_name, True)
 
     # ── SECTION E: TOMORROW'S PREVIEW ───────────────────────────────────────
     st.divider()
-    with st.expander("📅 Coming up next..."):
+    with st.expander("Coming up next..."):
         _render_tomorrow_preview(topic_data, todays_plan['current_week'], todays_plan.get("new_topic"))
 
 

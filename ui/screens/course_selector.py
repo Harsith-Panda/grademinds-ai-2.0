@@ -19,12 +19,12 @@ def render_course_selector():
             done = course["done_topics"]
             pct = int((done / total * 100) if total else 0)
 
-            with st.container(border=True):
+            with st.container():
                 col1, col2, col3 = st.columns([5, 2, 1])
 
                 with col1:
                     mode_badge = (
-                        "🎓 Academic" if course["mode"] == "academic" else "🧭 Explorer"
+                        "Academic" if course["mode"] == "academic" else "Explorer"
                     )
                     st.markdown(f"**{course['topic']}** &nbsp; `{mode_badge}`")
                     if total:
@@ -82,21 +82,21 @@ def render_course_selector():
                             "session_date": str(date.today()),
                             "chroma_initialized": True,
                         }
-                        st.session_state["screen"] = "roadmap_view"
+                        st.session_state["screen"] = "today_plan"
                         set_qp = getattr(st, "experimental_set_query_params", None)
                         if set_qp is None:
                             set_qp = getattr(st, "set_query_params", None)
                         if set_qp:
                             set_qp(
                                 student_id=student["student_id"],
-                                screen="roadmap_view",
+                                screen="today_plan",
                                 course_id=course["course_id"],
                             )
                         st.rerun()
 
                 with col3:
                     if st.button(
-                        "🗑️", key=f"del_{course['course_id']}", help="Delete this course"
+                        "Delete", key=f"del_{course['course_id']}", help="Delete this course"
                     ):
                         delete_course(course["course_id"])
                         delete_course_data(course["course_id"])
@@ -108,13 +108,13 @@ def render_course_selector():
     col1, col2 = st.columns(2)
     with col1:
         if st.button(
-            "🧭 Explorer — learn any topic", use_container_width=True, type="primary"
+            "Explorer — learn any topic", use_container_width=True, type="primary"
         ):
             st.session_state["screen"] = "onboarding"
             st.rerun()
     with col2:
         if st.button(
-            "🎓 Academic — study from syllabus/grades", use_container_width=True
+            "Academic — study from syllabus/grades", use_container_width=True
         ):
             st.session_state["screen"] = "academic_onboarding"
             st.rerun()

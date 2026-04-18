@@ -4,7 +4,7 @@ import time
 
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 load_dotenv()
 
@@ -34,14 +34,11 @@ class DiagnosisOutput(BaseModel):
     recommendations: list[str]  # 2-3 top actions, ordered by impact
     predicted_grade: str  # letter grade interpretation of score
 
-    @validator("weak_areas")
+    @field_validator("weak_areas")
+    @classmethod
     def at_least_one(cls, v):
         if not v:
             raise ValueError("Must have at least one weak area")
-        return v
-
-    @validator("impact", each_item=False, pre=False, always=False, check_fields=False)
-    def valid_impacts(cls, v):
         return v
 
 

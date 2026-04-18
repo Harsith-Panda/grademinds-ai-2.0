@@ -5,7 +5,7 @@ from collections import defaultdict, deque
 
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from memory.chroma_ops import load_roadmap, save_roadmap
 from memory.student_registry import mark_roadmap_ready
@@ -29,19 +29,22 @@ class WeekPlan(BaseModel):
     total_hours: float
     focus: str  # one sentence -> Goal for this week
 
-    @validator("week")
+    @field_validator("week")
+    @classmethod
     def week_positive(cls, v):
         if v < 1:
             raise ValueError("Week must be >= 1")
         return v
 
-    @validator("topics")
+    @field_validator("topics")
+    @classmethod
     def topics_not_empty(cls, v):
         if not v:
             raise ValueError("Week must have at least one topic")
         return v
 
-    @validator("total_hours")
+    @field_validator("total_hours")
+    @classmethod
     def hours_positive(cls, v):
         return max(0.5, float(v))
 

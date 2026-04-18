@@ -19,7 +19,7 @@ def render_roadmap_view(roadmap: list[dict], topic_data: list[dict], course_id: 
     done_topics = sum(1 for t in topic_data if t.get("status") == "done")
     pct = int((done_topics / total_topics * 100) if total_topics else 0)
 
-    st.markdown("## 🗺️ Your Learning Roadmap")
+    st.markdown("## Your Learning Roadmap")
     st.progress(
         pct / 100, text=f"{done_topics}/{total_topics} topics complete ({pct}%)"
     )
@@ -34,9 +34,9 @@ def render_roadmap_view(roadmap: list[dict], topic_data: list[dict], course_id: 
         week_complete = week_done == len(week_topics)
 
         label = (
-            f"✅ Week {week_num} — {week['focus']}"
+            f"Week {week_num} — {week['focus']} (Complete)"
             if week_complete
-            else f"📖 Week {week_num} — {week['focus']}"
+            else f"Week {week_num} — {week['focus']}"
         )
 
         with st.expander(label, expanded=(week_done < len(week_topics))):
@@ -50,11 +50,11 @@ def render_roadmap_view(roadmap: list[dict], topic_data: list[dict], course_id: 
                 col1, col2, col3 = st.columns([5, 1, 1])
                 with col1:
                     icon = (
-                        "✅"
+                        "[Done]"
                         if status == "done"
-                        else "🔵"
+                        else "[In Progress]"
                         if status == "in_progress"
-                        else "⚪"
+                        else "[Not Started]"
                     )
                     badge = (
                         "must-know"
@@ -73,7 +73,7 @@ def render_roadmap_view(roadmap: list[dict], topic_data: list[dict], course_id: 
                             )
                             st.rerun()
                     else:
-                        st.write("✅")
+                        st.write("Done")
 
                 with col3:
                     if status != "done":
@@ -85,4 +85,4 @@ def render_roadmap_view(roadmap: list[dict], topic_data: list[dict], course_id: 
                             )
                             st.rerun()
 
-    st.info("💡 **Tip:** 'Done (Easy)' schedules a review in 2-3 days. 'Done (Hard)' schedules it for tomorrow.")
+    st.info("**Tip:** 'Done (Easy)' schedules a review in 2-3 days. 'Done (Hard)' schedules it for tomorrow.")
