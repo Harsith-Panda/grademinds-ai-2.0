@@ -26,6 +26,9 @@ GradeMinds AI operates on a high-fidelity pipeline consisting of five specialize
 ![GradeMinds System Architecture](diagrams/architecture/Architecture_diagram.png)
 
 ### 1. The Predictive ML Layer (`ml/`)
+
+**NOTE** : Model pickle files are committed directly to the repository. While this deviates from standard practices such as Git LFS or external model storage, it is an intentional decision given the small model size and the educational scope of this project — which focuses primarily on demonstrating LangGraph workflows and related tooling. Hence, certain production-level best practices have been relaxed to keep the setup simple and accessible.
+
 The foundation of "Academic Mode," this layer utilizes dual-model inference to assess student readiness:
 - **Linear Regression Model**: Predicts a granular exam score (0–100).
 - **Decision Tree Classifier**: Determines Pass/Fail probability and generates a relative feature importance map.
