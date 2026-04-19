@@ -2,6 +2,8 @@
 
 GradeMinds AI is a sophisticated, production-grade learning platform that leverages the intersection of **Agentic AI Orchestration**, **Predictive Machine Learning**, and **Persistent Vector Memory**. It transforms fragmented educational data into structured, personalized, and long-term learning journeys.
 
+**LINK** : https://grademindsai.streamlit.app
+
 ---
 
 ## Strategic Value Proposition
@@ -26,8 +28,6 @@ GradeMinds AI operates on a high-fidelity pipeline consisting of five specialize
 ![GradeMinds System Architecture](diagrams/architecture/Architecture_diagram.png)
 
 ### 1. The Predictive ML Layer (`ml/`)
-
-**NOTE** : Model pickle files are committed directly to the repository. While this deviates from standard practices such as Git LFS or external model storage, it is an intentional decision given the small model size and the educational scope of this project — which focuses primarily on demonstrating LangGraph workflows and related tooling. Hence, certain production-level best practices have been relaxed to keep the setup simple and accessible.
 
 The foundation of "Academic Mode," this layer utilizes dual-model inference to assess student readiness:
 - **Linear Regression Model**: Predicts a granular exam score (0–100).
@@ -94,6 +94,122 @@ grademinds-ai-2.0/
 ├── app.py                  # Main Entry Point & Session Dispatcher
 └── grademinds_db/          # Persistent ChromaDB Storage (Local)
 ```
+
+## ⚙️ Setup & Installation
+
+### Prerequisites
+
+Before cloning, ensure you have the following installed on your machine:
+
+- Python 3.10 or higher
+- Git
+- [Git LFS](https://git-lfs.com/) — required to download the ML model files
+
+---
+
+### 1. Install Git LFS
+
+```bash
+git lfs install
+```
+
+> Skip this if you already have Git LFS installed. Run `git lfs version` to check.
+
+---
+
+### 2. Clone the Repository
+
+```bash
+git clone https://github.com/Harsith-Panda/grademinds-ai-2.0
+cd grademinds-ai-2.0
+```
+
+The ML model pkl files in `ml/models/` will download automatically via Git LFS.
+
+---
+
+### 3. Create a Virtual Environment
+
+#### 3.1 Python Virtual Envronment
+
+```bash
+python -m venv venv
+
+# Activate — Windows
+venv\Scripts\activate
+
+# Activate — Mac/Linux
+source venv/bin/activate
+```
+
+#### 3.2 Conda (Alternative Way)
+
+```bash
+conda env create -f environment.yml
+# Using this you can skip the step-4
+```
+
+---
+
+### 4. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 5. Configure API Keys
+
+Create a `.env` file in the project root:
+
+```bash
+touch .env
+```
+
+Add the following keys:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+TAVILY_API_KEY=your_tavily_api_key_here
+```
+
+| Key | Where to get it | Free tier |
+|---|---|---|
+| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) | 14,400 req/day |
+| `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | 1,000 searches/month |
+
+> Never commit your `.env` file. It is already listed in `.gitignore`.
+
+---
+
+### 6. Verify ML Models
+
+Confirm the pkl files downloaded correctly via Git LFS:
+
+```bash
+git lfs ls-files
+```
+
+You should see both model files listed:
+ml/models/linear_regression_model.pkl
+ml/models/decision_tree_classifier.pkl
+
+If the files are missing or corrupted, pull them manually:
+
+```bash
+git lfs pull
+```
+
+---
+
+### 7. Run the Application
+
+```bash
+streamlit run app.py
+```
+
+The app will open at `http://localhost:8501`.
 
 ---
 
