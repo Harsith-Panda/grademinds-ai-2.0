@@ -2,7 +2,7 @@
 
 GradeMinds AI is a sophisticated, production-grade learning platform that leverages the intersection of **Agentic AI Orchestration**, **Predictive Machine Learning**, and **Persistent Vector Memory**. It transforms fragmented educational data into structured, personalized, and long-term learning journeys.
 
-**LINK** : https://grademindsai.streamlit.app
+**LINK** : https://grademindsai.streamlit.app/
 
 ---
 
@@ -11,17 +11,20 @@ GradeMinds AI is a sophisticated, production-grade learning platform that levera
 GradeMinds AI is engineered to eliminate the cognitive overhead of curriculum management and academic performance tracking through three core intelligence layers:
 
 ### 1. Predictive Performance Modeling (The ML Layer)
+
 By analyzing student attributes (study habits, attendance, past scores) against historical datasets, GradeMinds AI predicts individual exam performance and identifies critical "Knowledge Gaps" before the student even begins their study journey.
 
 ### 2. Semantic Curriculum Orchestration (The Agentic Layer)
+
 Utilizing a multi-node LangGraph framework, the system distills raw syllabi into atomic learning milestones, sequenced logically via topological dependencies and Bloom's Taxonomy.
 
 ### 3. Systematic Knowledge Mastery (The Memory Layer)
+
 The platform mitigates knowledge decay via an SM-2-inspired Spaced Repetition engine, ensuring that reviews are scheduled exactly when retention begins to fade, turning short-term learning into long-term cognitive mastery.
 
 ---
 
-##  System Architecture & Workflow
+## System Architecture & Workflow
 
 GradeMinds AI operates on a high-fidelity pipeline consisting of five specialized agentic nodes, integrated with a dedicated Predictive ML module.
 
@@ -30,14 +33,16 @@ GradeMinds AI operates on a high-fidelity pipeline consisting of five specialize
 ### 1. The Predictive ML Layer (`ml/`)
 
 The foundation of "Academic Mode," this layer utilizes dual-model inference to assess student readiness:
+
 - **Linear Regression Model**: Predicts a granular exam score (0–100).
 - **Decision Tree Classifier**: Determines Pass/Fail probability and generates a relative feature importance map.
 - **Gap Analysis**: Computes the "Score Impact" of each student attribute, allowing the system to prioritize interventions (e.g., "Increase study hours by 4 hrs/week to gain ~12 points").
 
-For learning more about the ML pipeline workflow and creation do check out the following repo 
+For learning more about the ML pipeline workflow and creation do check out the following repo
 [`ML Pipeline Repo`](https://github.com/Harsith-Panda/grademinds-ai-student-success-ml)
 
 #### Model Performance & Feature Importance
+
 The system compares multiple modeling approaches to ensure high-fidelity predictions. The current production environment utilizes a Decision Tree Classifier for pass/fail probability due to its superior non-linear pattern recognition.
 
 <p align="center">
@@ -49,6 +54,7 @@ The system compares multiple modeling approaches to ensure high-fidelity predict
 </p>
 
 ### 2. The Agentic Brain (`agent/nodes/`)
+
 The orchestrator sequences the learning experience across five distinct phases:
 
 1.  **Node 1: The Diagnostician**: Synthesizes ML outputs into plain-English "Academic Diagnoses," providing actionable recommendations and risk assessments.
@@ -59,16 +65,17 @@ The orchestrator sequences the learning experience across five distinct phases:
 
 ---
 
-##  Memory & Data Integrity (`memory/`)
+## Memory & Data Integrity (`memory/`)
 
 The platform ensures 100% data isolation and session persistence through a custom memory architecture:
+
 - **Student Registry**: Secure hashing for credentials and multi-user data isolation.
 - **Persistence Bridge**: Synchronizes local Streamlit state with browser `localStorage` and URL parameters to ensure sessions survive across browser refreshes.
 - **Persistent ChromaDB**: All roadmaps, topics, and curated resources are stored in specialized vector collections, allowing the AI to "remember" every student's unique progress across sessions.
 
 ---
 
-##  Technical Foundation
+## Technical Foundation
 
 - **Orchestration**: LangGraph (v0.2.x) with custom Pydantic-validated state management.
 - **Predictive ML**: Scikit-learn (Decision Trees, Linear Regression) via `joblib`.
@@ -79,7 +86,7 @@ The platform ensures 100% data isolation and session persistence through a custo
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```text
 grademinds-ai-2.0/
@@ -177,10 +184,10 @@ GROQ_API_KEY=your_groq_api_key_here
 TAVILY_API_KEY=your_tavily_api_key_here
 ```
 
-| Key | Where to get it | Free tier |
-|---|---|---|
-| `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) | 14,400 req/day |
-| `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | 1,000 searches/month |
+| Key              | Where to get it                              | Free tier            |
+| ---------------- | -------------------------------------------- | -------------------- |
+| `GROQ_API_KEY`   | [console.groq.com](https://console.groq.com) | 14,400 req/day       |
+| `TAVILY_API_KEY` | [tavily.com](https://tavily.com)             | 1,000 searches/month |
 
 > Never commit your `.env` file. It is already listed in `.gitignore`.
 
@@ -216,4 +223,4 @@ The app will open at `http://localhost:8501`.
 
 ---
 
-*GradeMinds AI — Transforming raw information into structured intelligence.*
+_GradeMinds AI — Transforming raw information into structured intelligence._
