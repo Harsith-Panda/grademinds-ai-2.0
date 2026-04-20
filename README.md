@@ -34,6 +34,9 @@ The foundation of "Academic Mode," this layer utilizes dual-model inference to a
 - **Decision Tree Classifier**: Determines Pass/Fail probability and generates a relative feature importance map.
 - **Gap Analysis**: Computes the "Score Impact" of each student attribute, allowing the system to prioritize interventions (e.g., "Increase study hours by 4 hrs/week to gain ~12 points").
 
+For learning more about the ML pipeline workflow and creation do check out the following repo 
+[`ML Pipeline Repo`](https://github.com/Harsith-Panda/grademinds-ai-student-success-ml)
+
 #### Model Performance & Feature Importance
 The system compares multiple modeling approaches to ensure high-fidelity predictions. The current production environment utilizes a Decision Tree Classifier for pass/fail probability due to its superior non-linear pattern recognition.
 
